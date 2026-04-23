@@ -2,6 +2,42 @@
 
 Traditional Chinese README: [README.zh-TW.md](./README.zh-TW.md)
 
+![Agent Sprite Forge Banner](./src/banner.svg)
+
+> Turn natural-language prompts into game-ready 2D sprites with Codex.
+>
+> Plan with an agent. Render with built-in image generation. Export clean transparent sheets and GIFs.
+
+## Showcase
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="./src/naruto-rasengan.gif" alt="Naruto Rasengan" width="192" />
+      <br />
+      <strong>Naruto using Rasengan</strong>
+      <br />
+      <code>使用$generate2dsprite幫我做一個鳴人使用螺旋丸的元素</code>
+    </td>
+    <td align="center" width="33%">
+      <img src="./src/ref1.jpg" alt="Reference crocodile" width="84" />
+      <br />
+      <img src="./src/croc_stone_play.gif" alt="Crocodile playing with a stone" width="192" />
+      <br />
+      <strong>Reference image -> sprite animation</strong>
+      <br />
+      <code>幫我使用$generate2dsprite做一個這隻鱷魚玩手上石頭的元素</code>
+    </td>
+    <td align="center" width="33%">
+      <img src="./src/goku-kame.gif" alt="Goku Kamehameha" width="192" />
+      <br />
+      <strong>Goku with Kamehameha</strong>
+      <br />
+      <code>help me to use$generate2dsprite to create a goku is attacking with Kamehameha</code>
+    </td>
+  </tr>
+</table>
+
 Codex-first 2D sprite generation skill for game-ready pixel assets.
 
 This repository currently ships one generic skill: [`skills/generate2dsprite`](./skills/generate2dsprite).
@@ -155,48 +191,6 @@ Use $generate2dsprite to create a golden divine boar 2x2 idle animation.
 ```text
 Use $generate2dsprite to create a Naruto-style rasengan cast sheet in 2x3.
 ```
-
-## Showcase
-
-### 1. Naruto Using Rasengan
-
-Prompt:
-
-```text
-使用$generate2dsprite幫我做一個鳴人使用螺旋丸的元素
-```
-
-Result:
-
-![Naruto Rasengan](./src/naruto-rasengan.gif)
-
-### 2. Crocodile Playing With a Stone
-
-Reference image:
-
-![Reference 1](./src/ref1.jpg)
-
-Prompt:
-
-```text
-幫我使用$generate2dsprite做一個這隻鱷魚玩手上石頭的元素
-```
-
-Result:
-
-![Croc Stone Play](./src/croc_stone_play.gif)
-
-### 3. Goku Attacking With Kamehameha
-
-Prompt:
-
-```text
-help me to use$generate2dsprite to create a goku is attacking with Kamehameha
-```
-
-Result:
-
-![Goku Kamehameha](./src/goku-kame.gif)
 
 ## What You Get
 

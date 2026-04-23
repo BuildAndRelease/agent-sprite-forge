@@ -2,6 +2,42 @@
 
 English README: [README.md](./README.md)
 
+![Agent Sprite Forge Banner](./src/banner.svg)
+
+> 把自然語言需求直接變成可用於遊戲的 2D sprite。
+>
+> 由 agent 規劃資產，由 Codex 生圖，再由本地 processor 輸出乾淨的透明 sheet 與 GIF。
+
+## Showcase
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="./src/naruto-rasengan.gif" alt="Naruto Rasengan" width="192" />
+      <br />
+      <strong>鳴人使用螺旋丸</strong>
+      <br />
+      <code>使用$generate2dsprite幫我做一個鳴人使用螺旋丸的元素</code>
+    </td>
+    <td align="center" width="33%">
+      <img src="./src/ref1.jpg" alt="Reference crocodile" width="84" />
+      <br />
+      <img src="./src/croc_stone_play.gif" alt="Crocodile playing with a stone" width="192" />
+      <br />
+      <strong>參考圖 -> sprite 動畫</strong>
+      <br />
+      <code>幫我使用$generate2dsprite做一個這隻鱷魚玩手上石頭的元素</code>
+    </td>
+    <td align="center" width="33%">
+      <img src="./src/goku-kame.gif" alt="Goku Kamehameha" width="192" />
+      <br />
+      <strong>悟空使用龜派氣功</strong>
+      <br />
+      <code>help me to use$generate2dsprite to create a goku is attacking with Kamehameha</code>
+    </td>
+  </tr>
+</table>
+
 這是一個以 Codex 為核心的 2D sprite 生成 skill，用來產出可直接拿去做遊戲資產的 pixel art。
 
 這個 repo 目前只放一個通用型 skill：
@@ -162,48 +198,6 @@ Use $generate2dsprite to create a golden divine boar 2x2 idle animation.
 ```text
 Use $generate2dsprite to create a Naruto-style rasengan cast sheet in 2x3.
 ```
-
-## Showcase
-
-### 1. 鳴人使用螺旋丸
-
-Prompt：
-
-```text
-使用$generate2dsprite幫我做一個鳴人使用螺旋丸的元素
-```
-
-結果：
-
-![Naruto Rasengan](./src/naruto-rasengan.gif)
-
-### 2. 鱷魚玩手上的石頭
-
-參考圖：
-
-![Reference 1](./src/ref1.jpg)
-
-Prompt：
-
-```text
-幫我使用$generate2dsprite做一個這隻鱷魚玩手上石頭的元素
-```
-
-結果：
-
-![Croc Stone Play](./src/croc_stone_play.gif)
-
-### 3. 悟空使用龜派氣功
-
-Prompt：
-
-```text
-help me to use$generate2dsprite to create a goku is attacking with Kamehameha
-```
-
-結果：
-
-![Goku Kamehameha](./src/goku-kame.gif)
 
 ## 會輸出什麼
 
