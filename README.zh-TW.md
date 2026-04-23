@@ -2,7 +2,7 @@
 
 English README: [README.md](./README.md)
 
-![Agent Sprite Forge Banner](./src/banner.svg)
+![Agent Sprite Forge Banner](./src/banner.png)
 
 > 把自然語言需求直接變成可用於遊戲的 2D sprite。
 >
@@ -10,8 +10,17 @@ English README: [README.md](./README.md)
 
 ## Showcase
 
+### 文字到 Sprite
+
 <table>
   <tr>
+    <td align="center" width="33%">
+      <img src="./src/goku-kame.gif" alt="Goku Kamehameha" width="192" />
+      <br />
+      <strong>悟空使用龜派氣功</strong>
+      <br />
+      <code>help me to use$generate2dsprite to create a goku is attacking with Kamehameha</code>
+    </td>
     <td align="center" width="33%">
       <img src="./src/naruto-rasengan.gif" alt="Naruto Rasengan" width="192" />
       <br />
@@ -19,21 +28,24 @@ English README: [README.md](./README.md)
       <br />
       <code>使用$generate2dsprite幫我做一個鳴人使用螺旋丸的元素</code>
     </td>
-    <td align="center" width="33%">
-      <img src="./src/ref1.jpg" alt="Reference crocodile" width="84" />
+  </tr>
+</table>
+
+### 參考圖到 Sprite
+
+<table>
+  <tr>
+    <td align="center" width="35%">
+      <img src="./src/ref1.jpg" alt="Reference crocodile" width="180" />
       <br />
-      <img src="./src/croc_stone_play.gif" alt="Crocodile playing with a stone" width="192" />
+      <strong>參考圖</strong>
+    </td>
+    <td align="center" width="65%">
+      <img src="./src/croc_stone_play.gif" alt="Crocodile playing with a stone" width="220" />
       <br />
-      <strong>參考圖 -> sprite 動畫</strong>
+      <strong>生成結果</strong>
       <br />
       <code>幫我使用$generate2dsprite做一個這隻鱷魚玩手上石頭的元素</code>
-    </td>
-    <td align="center" width="33%">
-      <img src="./src/goku-kame.gif" alt="Goku Kamehameha" width="192" />
-      <br />
-      <strong>悟空使用龜派氣功</strong>
-      <br />
-      <code>help me to use$generate2dsprite to create a goku is attacking with Kamehameha</code>
     </td>
   </tr>
 </table>

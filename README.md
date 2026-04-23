@@ -2,7 +2,7 @@
 
 Traditional Chinese README: [README.zh-TW.md](./README.zh-TW.md)
 
-![Agent Sprite Forge Banner](./src/banner.svg)
+![Agent Sprite Forge Banner](./src/banner.png)
 
 > Turn natural-language prompts into game-ready 2D sprites with Codex.
 >
@@ -10,8 +10,17 @@ Traditional Chinese README: [README.zh-TW.md](./README.zh-TW.md)
 
 ## Showcase
 
+### Text To Sprite
+
 <table>
   <tr>
+    <td align="center" width="33%">
+      <img src="./src/goku-kame.gif" alt="Goku Kamehameha" width="192" />
+      <br />
+      <strong>Goku with Kamehameha</strong>
+      <br />
+      <code>help me to use$generate2dsprite to create a goku is attacking with Kamehameha</code>
+    </td>
     <td align="center" width="33%">
       <img src="./src/naruto-rasengan.gif" alt="Naruto Rasengan" width="192" />
       <br />
@@ -19,21 +28,24 @@ Traditional Chinese README: [README.zh-TW.md](./README.zh-TW.md)
       <br />
       <code>使用$generate2dsprite幫我做一個鳴人使用螺旋丸的元素</code>
     </td>
-    <td align="center" width="33%">
-      <img src="./src/ref1.jpg" alt="Reference crocodile" width="84" />
+  </tr>
+</table>
+
+### Reference To Sprite
+
+<table>
+  <tr>
+    <td align="center" width="35%">
+      <img src="./src/ref1.jpg" alt="Reference crocodile" width="180" />
       <br />
-      <img src="./src/croc_stone_play.gif" alt="Crocodile playing with a stone" width="192" />
+      <strong>Reference</strong>
+    </td>
+    <td align="center" width="65%">
+      <img src="./src/croc_stone_play.gif" alt="Crocodile playing with a stone" width="220" />
       <br />
-      <strong>Reference image -> sprite animation</strong>
+      <strong>Generated sprite animation</strong>
       <br />
       <code>幫我使用$generate2dsprite做一個這隻鱷魚玩手上石頭的元素</code>
-    </td>
-    <td align="center" width="33%">
-      <img src="./src/goku-kame.gif" alt="Goku Kamehameha" width="192" />
-      <br />
-      <strong>Goku with Kamehameha</strong>
-      <br />
-      <code>help me to use$generate2dsprite to create a goku is attacking with Kamehameha</code>
     </td>
   </tr>
 </table>
