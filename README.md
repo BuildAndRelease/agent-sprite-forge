@@ -1,5 +1,7 @@
 # Agent Sprite Forge
 
+中文說明請直接跳到這裡: [繁體中文](#繁體中文)
+
 Codex-first 2D sprite generation skill for game-ready pixel assets.
 
 This repository currently ships one generic skill: [`skills/generate2dsprite`](skills/generate2dsprite).
