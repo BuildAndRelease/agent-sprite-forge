@@ -4,9 +4,9 @@ English README: [README.md](./README.md)
 
 ![Agent Sprite Forge Banner](./src/banner.png)
 
-> 把自然語言需求直接變成可用於遊戲的 2D sprite。
+> 把自然語言需求直接變成可用於遊戲的 2D sprite 與分層 2D 地圖。
 >
-> 由 agent 規劃資產，由 Codex 生圖，再由本地 processor 輸出乾淨的透明 sheet 與 GIF。
+> 由 agent 規劃資產，由 Codex 生圖，再由本地 processor 輸出乾淨的透明 sheet、GIF、地圖、props 與可接碰撞資料的場景。
 
 ## Showcase
 
@@ -133,7 +133,7 @@ Retro JRPG pixel-art style.
 
 ### Codex 一次到位的可玩遊戲
 
-完全由 Codex 在單一 prompt 內規劃並完成的可玩遊戲,所有美術資產都透過 `$generate2dsprite` 生成。
+完全由 Codex 在單一 prompt 內規劃並完成的可玩遊戲。sprites 與 props 透過 `$generate2dsprite` 生成；當遊戲需要結構化地圖時，地圖場景由 `$generate2dmap` 規劃。
 
 #### Neon Breach — 賽博龐克橫向捲軸
 
@@ -171,19 +171,48 @@ Use $generate2dsprite to create a 2D game similar to Pokemon. You only need to b
 Please also pay attention to the size of the elements (the generated sprites need to be proportionally correct when placed into the game), and a game map must be generated as well. Basically, just help me make a game like this—I believe you won't have any problem doing this with that skill! Just one scene is enough, and there's no need for too many monster characters. Let's just start with a few, and we can slowly expand on it later!
 ```
 
-這是一個以 Codex 為核心的 2D sprite 生成 skill,用來產出可直接拿去做遊戲資產的 pixel art。
+### 分層 RPG 地圖 / Base + Props
 
-這個 repo 目前只放一個通用型 skill：
+當遊戲需要碰撞、遮擋、互動、重用物件或角色 y-sort 時，`$generate2dmap` 可以選擇分層地圖流程。這時它會使用 `$generate2dsprite` 生成透明 props，再組合 base map、prop 擺放資料、碰撞資料與 flattened preview。
 
-- [`skills/generate2dsprite`](./skills/generate2dsprite)
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="./src/map-shrine-base.png" alt="神社庭院 ground-only base map" width="360" />
+      <br />
+      <strong>Ground-only base map</strong>
+    </td>
+    <td align="center" width="50%">
+      <img src="./src/map-props-preview.png" alt="生成出的神社地圖 props" width="360" />
+      <br />
+      <strong>生成出的透明 props</strong>
+    </td>
+  </tr>
+</table>
+
+<p align="center">
+  <img src="./src/map-shrine-layered-preview.png" alt="分層神社庭院 preview" width="720" />
+  <br />
+  <strong>Flattened layered preview</strong>
+</p>
+
+這是一組以 Codex 為核心的 2D game asset skills，用來產出可直接拿去做遊戲資產與可玩地圖場景的 pixel art。
+
+這個 repo 目前提供兩個 skills：
+
+- [`skills/generate2dsprite`](./skills/generate2dsprite)：生成並後處理 sprites、動畫 sheets、props 與 FX。
+- [`skills/generate2dmap`](./skills/generate2dmap)：選擇最輕量的地圖 pipeline，建立地圖、props、碰撞資料、zones、preview 與遊戲整合。
+
+`$generate2dmap` 只有在選定的地圖策略需要可重用透明 props 時，才會呼叫 `$generate2dsprite`。簡單地圖可以維持單張 baked image。
 
 之所以先以 Codex 為主，是因為 Codex 本身就有內建 image generation，所以整個流程可以留在同一個 agent 內完成：
 
-1. 由 agent 規劃資產類型與動畫形式。
-2. 由 Codex 生成 raw sprite sheet。
+1. 由 agent 規劃資產類型、動畫形式或地圖 pipeline。
+2. 由 Codex 生成 raw sprite sheet、prop 或 map image。
 3. 由本地 processor 做去背、切格、對齊、基本 QC，最後輸出透明 PNG / GIF。
+4. 需要時組裝地圖場景，包含 collision、zones、prop placement 與 preview image。
 
-目前這個 repo 的重點是通用型 2D 資產，不是整包遊戲 pack。
+目前這個 repo 的重點是 2D 遊戲資產與地圖場景，不是整包遊戲 pack 自動化。
 
 ## 可以生成什麼
 
@@ -195,6 +224,10 @@ Please also pay attention to the size of the elements (the generated sprites nee
 - Impact / explosion
 - FX sheet
 - 小型 bundle，例如 `unit_bundle`、`spell_bundle`、`combat_bundle`
+- 單張 baked 2D map
+- base map + 透明 props 的分層地圖
+- 可玩地圖用的 collision / zone metadata
+- 給 QA 與 showcase 用的 flattened map preview
 
 ## 為什麼先做 Codex 版本
 
@@ -232,6 +265,13 @@ agent-sprite-forge/
   requirements.txt
   src/
   skills/
+    generate2dmap/
+      SKILL.md
+      agents/
+        openai.yaml
+      references/
+        layered-map-contract.md
+        map-strategies.md
     generate2dsprite/
       SKILL.md
       agents/
@@ -247,7 +287,7 @@ agent-sprite-forge/
 
 ### Option 1: Windows PowerShell
 
-先 clone repo，安裝本地 processor 依賴，再把 skill 複製到 Codex skills 目錄：
+先 clone repo，安裝本地 processor 依賴，再把兩個 skills 複製到 Codex skills 目錄：
 
 ```powershell
 git clone https://github.com/0x0funky/agent-sprite-forge.git
@@ -255,8 +295,8 @@ cd .\agent-sprite-forge
 python -m pip install -r .\requirements.txt
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.codex\skills" | Out-Null
 Copy-Item -Recurse -Force `
-  ".\skills\generate2dsprite" `
-  "$env:USERPROFILE\.codex\skills\generate2dsprite"
+  ".\skills\*" `
+  "$env:USERPROFILE\.codex\skills\"
 ```
 
 ### Option 2: macOS / Linux
@@ -266,7 +306,7 @@ git clone https://github.com/0x0funky/agent-sprite-forge.git
 cd ./agent-sprite-forge
 python3 -m pip install -r ./requirements.txt
 mkdir -p ~/.codex/skills
-cp -R ./skills/generate2dsprite ~/.codex/skills/generate2dsprite
+cp -R ./skills/* ~/.codex/skills/
 ```
 
 安裝完後建議重新開一個新的 Codex session，讓 skill 重新載入。
@@ -332,6 +372,20 @@ Use  $generate2dsprite to create a golden divine boar 2x2 idle animation.
 Use  $generate2dsprite to create a Naruto-style rasengan cast sheet in 2x3.
 ```
 
+### 地圖範例
+
+```text
+Use $generate2dmap to create a small fixed-screen pixel-art battle arena with simple collision.
+```
+
+```text
+Use $generate2dmap to create a top-down RPG shrine courtyard. It needs precise collision, an encounter grass zone, a rest point, and actors that can walk in front of and behind tall props.
+```
+
+```text
+Use $generate2dmap to revise this existing map into a hybrid map. Keep the background baked, but split the gate and lanterns into reusable transparent props.
+```
+
 ## 會輸出什麼
 
 一般 sheet 類型的輸出通常包含：
@@ -345,6 +399,11 @@ Use  $generate2dsprite to create a Naruto-style rasengan cast sheet in 2x3.
 - `pipeline-meta.json`
 
 如果是 player walk sheet，通常還會額外輸出各方向 strip 與各方向 GIF。
+
+如果是地圖輸出，結果會依選擇的 pipeline 而定：
+
+- 單張 baked map：完整地圖圖檔、可選的 prompt file，以及可選的 collision metadata。
+- Hybrid 或 layered map：base map、生成出的 prop folders、prop 擺放資料、collision/zones metadata，以及 flattened layered preview。
 
 ## 備註
 

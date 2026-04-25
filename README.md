@@ -4,9 +4,9 @@ Traditional Chinese README: [README.zh-TW.md](./README.zh-TW.md)
 
 ![Agent Sprite Forge Banner](./src/banner.png)
 
-> Turn natural-language prompts into game-ready 2D sprites with Codex.
+> Turn natural-language prompts into game-ready 2D sprites and layered 2D maps with Codex.
 >
-> Plan with an agent. Render with built-in image generation. Export clean transparent sheets and GIFs.
+> Plan with an agent. Render with built-in image generation. Export clean transparent sheets, GIFs, maps, props, and collision-ready scene data.
 
 ## Showcase
 
@@ -133,7 +133,7 @@ Retro JRPG pixel-art style.
 
 ### Codex One-Shot Playable Games
 
-End-to-end playable games designed and built by Codex in a single prompt, with every visual asset produced through `$generate2dsprite`.
+End-to-end playable games designed and built by Codex in a single prompt, with sprites and props produced through `$generate2dsprite` and map scenes planned through `$generate2dmap` when the game needs structured maps.
 
 #### Neon Breach — Cyberpunk Side-Scroller
 
@@ -171,17 +171,48 @@ Use $generate2dsprite to create a 2D game similar to Pokemon. You only need to b
 Please also pay attention to the size of the elements (the generated sprites need to be proportionally correct when placed into the game), and a game map must be generated as well. Basically, just help me make a game like this—I believe you won't have any problem doing this with that skill! Just one scene is enough, and there's no need for too many monster characters. Let's just start with a few, and we can slowly expand on it later!
 ```
 
-Codex-first 2D sprite generation skill for game-ready pixel assets.
+### Layered RPG Map / Base + Props
 
-This repository currently ships one generic skill: [`skills/generate2dsprite`](./skills/generate2dsprite).
+`$generate2dmap` can choose a layered map pipeline when a game needs collision, occlusion, interaction, reuse, or y-sorted actors. In that case it uses `$generate2dsprite` for transparent props, then assembles a base map, prop placement metadata, collision data, and a flattened preview.
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="./src/map-shrine-base.png" alt="Ground-only shrine courtyard base map" width="360" />
+      <br />
+      <strong>Ground-only base map</strong>
+    </td>
+    <td align="center" width="50%">
+      <img src="./src/map-props-preview.png" alt="Generated shrine map props" width="360" />
+      <br />
+      <strong>Generated transparent props</strong>
+    </td>
+  </tr>
+</table>
+
+<p align="center">
+  <img src="./src/map-shrine-layered-preview.png" alt="Layered shrine courtyard preview" width="720" />
+  <br />
+  <strong>Flattened layered preview</strong>
+</p>
+
+Codex-first 2D game asset skills for game-ready pixel assets and playable map scenes.
+
+This repository currently ships two skills:
+
+- [`skills/generate2dsprite`](./skills/generate2dsprite): generate and postprocess sprites, animation sheets, props, and FX.
+- [`skills/generate2dmap`](./skills/generate2dmap): choose the lightest map pipeline and build maps, props, collision data, zones, previews, and game integration.
+
+`$generate2dmap` invokes `$generate2dsprite` only when the chosen map strategy needs reusable transparent props. Simple maps can stay as a single baked image.
 
 Codex is the primary target because Codex already has built-in image generation. That lets one agent handle the full loop:
 
-1. Plan the asset.
-2. Generate the raw sprite sheet.
+1. Plan the asset or map pipeline.
+2. Generate the raw sprite sheet, prop, or map image.
 3. Run deterministic local post-processing for chroma-key cleanup, frame extraction, alignment, QC, and transparent PNG/GIF export.
+4. Assemble map scenes with collision, zones, prop placement, and preview images when needed.
 
-The current focus is self-contained 2D assets, not full game packs.
+The current focus is 2D game assets and map scenes, not full game-pack automation.
 
 ## What It Can Generate
 
@@ -193,6 +224,10 @@ The current focus is self-contained 2D assets, not full game packs.
 - Impacts and explosions
 - FX sheets
 - Small bundles such as `unit_bundle`, `spell_bundle`, and `combat_bundle`
+- Single baked 2D maps
+- Layered base maps with transparent props
+- Collision and zone metadata for playable maps
+- Flattened map previews for QA and showcase
 
 ## Why Codex First
 
@@ -227,6 +262,13 @@ agent-sprite-forge/
   requirements.txt
   src/
   skills/
+    generate2dmap/
+      SKILL.md
+      agents/
+        openai.yaml
+      references/
+        layered-map-contract.md
+        map-strategies.md
     generate2dsprite/
       SKILL.md
       agents/
@@ -242,7 +284,7 @@ agent-sprite-forge/
 
 ### Option 1: Windows PowerShell
 
-Clone the repo, install the local processor dependencies, then copy the skill into your Codex skills directory:
+Clone the repo, install the local processor dependencies, then copy both skills into your Codex skills directory:
 
 ```powershell
 git clone https://github.com/0x0funky/agent-sprite-forge.git
@@ -250,8 +292,8 @@ cd .\agent-sprite-forge
 python -m pip install -r .\requirements.txt
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.codex\skills" | Out-Null
 Copy-Item -Recurse -Force `
-  ".\skills\generate2dsprite" `
-  "$env:USERPROFILE\.codex\skills\generate2dsprite"
+  ".\skills\*" `
+  "$env:USERPROFILE\.codex\skills\"
 ```
 
 ### Option 2: macOS / Linux
@@ -261,7 +303,7 @@ git clone https://github.com/0x0funky/agent-sprite-forge.git
 cd ./agent-sprite-forge
 python3 -m pip install -r ./requirements.txt
 mkdir -p ~/.codex/skills
-cp -R ./skills/generate2dsprite ~/.codex/skills/generate2dsprite
+cp -R ./skills/* ~/.codex/skills/
 ```
 
 Start a new Codex session after installation so the skill is loaded cleanly.
@@ -325,6 +367,20 @@ Use  $generate2dsprite to create a golden divine boar 2x2 idle animation.
 Use  $generate2dsprite to create a Naruto-style rasengan cast sheet in 2x3.
 ```
 
+### Map Examples
+
+```text
+Use $generate2dmap to create a small fixed-screen pixel-art battle arena with simple collision.
+```
+
+```text
+Use $generate2dmap to create a top-down RPG shrine courtyard. It needs precise collision, an encounter grass zone, a rest point, and actors that can walk in front of and behind tall props.
+```
+
+```text
+Use $generate2dmap to revise this existing map into a hybrid map. Keep the background baked, but split the gate and lanterns into reusable transparent props.
+```
+
 ## What You Get
 
 For a typical sheet output:
@@ -338,6 +394,11 @@ For a typical sheet output:
 - `pipeline-meta.json`
 
 For player walk sheets, you also get direction strips and per-direction GIFs.
+
+For a map output, the result depends on the chosen pipeline:
+
+- Single baked map: a complete map image, optional prompt file, and optional collision metadata.
+- Hybrid or layered map: a base map, generated prop folders, prop placement metadata, collision/zones metadata, and a flattened layered preview.
 
 ## Notes
 
