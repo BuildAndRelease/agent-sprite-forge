@@ -171,19 +171,24 @@ Use $generate2dsprite to create a 2D game similar to Pokemon. You only need to b
 Please also pay attention to the size of the elements (the generated sprites need to be proportionally correct when placed into the game), and a game map must be generated as well. Basically, just help me make a game like this—I believe you won't have any problem doing this with that skill! Just one scene is enough, and there's no need for too many monster characters. Let's just start with a few, and we can slowly expand on it later!
 ```
 
-### 分層 RPG 地圖 / Base + Prop Pack
+### 分層 RPG 地圖 / Reference-Guided Prop Pack
 
 `$generate2dmap` 現在會把地圖視為一個 production pipeline，而不是單純四選一的策略。它會選擇 visual model、runtime object model、collision model 和 export target。對分層 raster map 來說，它可以先生成 ground-only base map，再把這張 base 顯示在對話中作為 wrapper reference，生成 dressed planning pass，接著把小型 props 批次做成 3x3 prop pack，切割成透明 props，寫入 y-sort placement metadata，最後合成 flattened preview。
 
 <table>
   <tr>
-    <td align="center" width="50%">
-      <img src="./src/forest-shrine-base.png" alt="森林神社 ground-only RPG base map" width="360" />
+    <td align="center" width="33%">
+      <img src="./src/stoneford-base.png" alt="Stoneford ground-only RPG base map" width="300" />
       <br />
       <strong>Ground-only base map</strong>
     </td>
-    <td align="center" width="50%">
-      <img src="./src/forest-shrine-prop-pack.png" alt="生成出的森林神社 3x3 prop pack" width="360" />
+    <td align="center" width="33%">
+      <img src="./src/stoneford-dressed-reference.png" alt="Stoneford dressed reference map" width="300" />
+      <br />
+      <strong>Dressed reference pass</strong>
+    </td>
+    <td align="center" width="33%">
+      <img src="./src/stoneford-prop-pack.png" alt="生成出的 Stoneford 3x3 prop pack" width="300" />
       <br />
       <strong>3x3 generated prop pack</strong>
     </td>
@@ -191,7 +196,7 @@ Please also pay attention to the size of the elements (the generated sprites nee
 </table>
 
 <p align="center">
-  <img src="./src/forest-shrine-layered-preview.png" alt="分層森林神社 RPG map preview" width="720" />
+  <img src="./src/stoneford-layered-preview.png" alt="分層 Stoneford RPG map preview" width="720" />
   <br />
   <strong>Flattened layered RPG map preview</strong>
 </p>
