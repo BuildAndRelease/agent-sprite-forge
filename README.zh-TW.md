@@ -171,46 +171,52 @@ Use $generate2dsprite to create a 2D game similar to Pokemon. You only need to b
 Please also pay attention to the size of the elements (the generated sprites need to be proportionally correct when placed into the game), and a game map must be generated as well. Basically, just help me make a game like this—I believe you won't have any problem doing this with that skill! Just one scene is enough, and there's no need for too many monster characters. Let's just start with a few, and we can slowly expand on it later!
 ```
 
-### 分層 RPG 地圖 / Base + Props
+### 分層 RPG 地圖 / Base + Prop Pack
 
-當遊戲需要碰撞、遮擋、互動、重用物件或角色 y-sort 時，`$generate2dmap` 可以選擇分層地圖流程。這時它會使用 `$generate2dsprite` 生成透明 props，再組合 base map、prop 擺放資料、碰撞資料與 flattened preview。
+`$generate2dmap` 現在會把地圖視為一個 production pipeline，而不是單純四選一的策略。它會選擇 visual model、runtime object model、collision model 和 export target。對分層 raster map 來說，它可以先生成 ground-only base map，再把小型 props 批次做成 3x3 prop pack，切割成透明 props，寫入 y-sort placement metadata，最後合成 flattened preview。
 
 <table>
   <tr>
     <td align="center" width="50%">
-      <img src="./src/map-shrine-base.png" alt="神社庭院 ground-only base map" width="360" />
+      <img src="./src/forest-shrine-base.png" alt="森林神社 ground-only RPG base map" width="360" />
       <br />
       <strong>Ground-only base map</strong>
     </td>
     <td align="center" width="50%">
-      <img src="./src/map-props-preview.png" alt="生成出的神社地圖 props" width="360" />
+      <img src="./src/forest-shrine-prop-pack.png" alt="生成出的森林神社 3x3 prop pack" width="360" />
       <br />
-      <strong>生成出的透明 props</strong>
+      <strong>3x3 generated prop pack</strong>
     </td>
   </tr>
 </table>
 
 <p align="center">
-  <img src="./src/map-shrine-layered-preview.png" alt="分層神社庭院 preview" width="720" />
+  <img src="./src/forest-shrine-layered-preview.png" alt="分層森林神社 RPG map preview" width="720" />
   <br />
-  <strong>Flattened layered preview</strong>
+  <strong>Flattened layered RPG map preview</strong>
 </p>
+
+Pipeline：
+
+```text
+layered_raster + y_sorted_props + precise_shapes + trigger_zones + raw_canvas
+```
 
 這是一組以 Codex 為核心的 2D game asset skills，用來產出可直接拿去做遊戲資產與可玩地圖場景的 pixel art。
 
 這個 repo 目前提供兩個 skills：
 
 - [`skills/generate2dsprite`](./skills/generate2dsprite)：生成並後處理 sprites、動畫 sheets、props 與 FX。
-- [`skills/generate2dmap`](./skills/generate2dmap)：選擇最輕量的地圖 pipeline，建立地圖、props、碰撞資料、zones、preview 與遊戲整合。
+- [`skills/generate2dmap`](./skills/generate2dmap)：選擇 2D map pipeline，生成 base map 或 prop pack，切出透明 props，合成 preview，並產出 collision / zones metadata。
 
-`$generate2dmap` 只有在選定的地圖策略需要可重用透明 props 時，才會呼叫 `$generate2dsprite`。簡單地圖可以維持單張 baked image。
+`$generate2dmap` 只有在選定的地圖 pipeline 需要可重用透明 props 時，才會使用 `$generate2dsprite`。小型環境物件可以批次生成為 `2x2`、`3x3` 或 `4x4` prop pack，再切成個別透明 props。簡單地圖可以維持單張 baked image。
 
 之所以先以 Codex 為主，是因為 Codex 本身就有內建 image generation，所以整個流程可以留在同一個 agent 內完成：
 
 1. 由 agent 規劃資產類型、動畫形式或地圖 pipeline。
 2. 由 Codex 生成 raw sprite sheet、prop 或 map image。
 3. 由本地 processor 做去背、切格、對齊、基本 QC，最後輸出透明 PNG / GIF。
-4. 需要時組裝地圖場景，包含 collision、zones、prop placement 與 preview image。
+4. 需要時組裝地圖場景，包含 collision、zones、prop placement、prop-pack manifest 與 preview image。
 
 目前這個 repo 的重點是 2D 遊戲資產與地圖場景，不是整包遊戲 pack 自動化。
 
@@ -226,6 +232,7 @@ Please also pay attention to the size of the elements (the generated sprites nee
 - 小型 bundle，例如 `unit_bundle`、`spell_bundle`、`combat_bundle`
 - 單張 baked 2D map
 - base map + 透明 props 的分層地圖
+- `2x2`、`3x3`、`4x4` 這類 2D map prop pack
 - 可玩地圖用的 collision / zone metadata
 - 給 QA 與 showcase 用的 flattened map preview
 
@@ -272,6 +279,10 @@ agent-sprite-forge/
       references/
         layered-map-contract.md
         map-strategies.md
+        prop-pack-contract.md
+      scripts/
+        compose_layered_preview.py
+        extract_prop_pack.py
     generate2dsprite/
       SKILL.md
       agents/
@@ -379,11 +390,11 @@ Use $generate2dmap to create a small fixed-screen pixel-art battle arena with si
 ```
 
 ```text
-Use $generate2dmap to create a top-down RPG shrine courtyard. It needs precise collision, an encounter grass zone, a rest point, and actors that can walk in front of and behind tall props.
+Use $generate2dmap to create a top-down RPG forest shrine map. Use a layered raster pipeline, a 3x3 prop pack for small environmental props, precise collision, encounter grass zones, a rest point, and actors that can walk in front of and behind tall props.
 ```
 
 ```text
-Use $generate2dmap to revise this existing map into a hybrid map. Keep the background baked, but split the gate and lanterns into reusable transparent props.
+Use $generate2dmap to revise this existing map into a layered raster map. Keep the background baked, but split the gate and lanterns into reusable transparent props with y-sort placement metadata.
 ```
 
 ## 會輸出什麼
@@ -403,7 +414,7 @@ Use $generate2dmap to revise this existing map into a hybrid map. Keep the backg
 如果是地圖輸出，結果會依選擇的 pipeline 而定：
 
 - 單張 baked map：完整地圖圖檔、可選的 prompt file，以及可選的 collision metadata。
-- Hybrid 或 layered map：base map、生成出的 prop folders、prop 擺放資料、collision/zones metadata，以及 flattened layered preview。
+- Layered raster map：base map、生成出的 prop folders 或 prop-pack extraction manifest、prop 擺放資料、collision/zones metadata，以及 flattened layered preview。
 
 ## 備註
 

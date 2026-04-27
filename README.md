@@ -171,46 +171,52 @@ Use $generate2dsprite to create a 2D game similar to Pokemon. You only need to b
 Please also pay attention to the size of the elements (the generated sprites need to be proportionally correct when placed into the game), and a game map must be generated as well. Basically, just help me make a game like this—I believe you won't have any problem doing this with that skill! Just one scene is enough, and there's no need for too many monster characters. Let's just start with a few, and we can slowly expand on it later!
 ```
 
-### Layered RPG Map / Base + Props
+### Layered RPG Map / Base + Prop Pack
 
-`$generate2dmap` can choose a layered map pipeline when a game needs collision, occlusion, interaction, reuse, or y-sorted actors. In that case it uses `$generate2dsprite` for transparent props, then assembles a base map, prop placement metadata, collision data, and a flattened preview.
+`$generate2dmap` now models maps as a production pipeline instead of a single strategy label. It chooses a visual model, runtime object model, collision model, and export target. For layered raster maps it can generate a ground-only base map, batch small props into a 3x3 prop pack, extract transparent props, place them with y-sort metadata, and compose a flattened preview.
 
 <table>
   <tr>
     <td align="center" width="50%">
-      <img src="./src/map-shrine-base.png" alt="Ground-only shrine courtyard base map" width="360" />
+      <img src="./src/forest-shrine-base.png" alt="Ground-only forest shrine RPG base map" width="360" />
       <br />
       <strong>Ground-only base map</strong>
     </td>
     <td align="center" width="50%">
-      <img src="./src/map-props-preview.png" alt="Generated shrine map props" width="360" />
+      <img src="./src/forest-shrine-prop-pack.png" alt="Generated 3x3 forest shrine prop pack" width="360" />
       <br />
-      <strong>Generated transparent props</strong>
+      <strong>3x3 generated prop pack</strong>
     </td>
   </tr>
 </table>
 
 <p align="center">
-  <img src="./src/map-shrine-layered-preview.png" alt="Layered shrine courtyard preview" width="720" />
+  <img src="./src/forest-shrine-layered-preview.png" alt="Layered forest shrine RPG map preview" width="720" />
   <br />
-  <strong>Flattened layered preview</strong>
+  <strong>Flattened layered RPG map preview</strong>
 </p>
+
+Pipeline:
+
+```text
+layered_raster + y_sorted_props + precise_shapes + trigger_zones + raw_canvas
+```
 
 Codex-first 2D game asset skills for game-ready pixel assets and playable map scenes.
 
 This repository currently ships two skills:
 
 - [`skills/generate2dsprite`](./skills/generate2dsprite): generate and postprocess sprites, animation sheets, props, and FX.
-- [`skills/generate2dmap`](./skills/generate2dmap): choose the lightest map pipeline and build maps, props, collision data, zones, previews, and game integration.
+- [`skills/generate2dmap`](./skills/generate2dmap): choose a 2D map pipeline, generate base maps or prop packs, extract transparent props, compose previews, and produce collision/zones metadata.
 
-`$generate2dmap` invokes `$generate2dsprite` only when the chosen map strategy needs reusable transparent props. Simple maps can stay as a single baked image.
+`$generate2dmap` uses `$generate2dsprite` when the chosen map pipeline needs reusable transparent props. Small environmental props can be batched into `2x2`, `3x3`, or `4x4` prop packs, then extracted into individual transparent props. Simple maps can stay as a single baked image.
 
 Codex is the primary target because Codex already has built-in image generation. That lets one agent handle the full loop:
 
 1. Plan the asset or map pipeline.
 2. Generate the raw sprite sheet, prop, or map image.
 3. Run deterministic local post-processing for chroma-key cleanup, frame extraction, alignment, QC, and transparent PNG/GIF export.
-4. Assemble map scenes with collision, zones, prop placement, and preview images when needed.
+4. Assemble map scenes with collision, zones, prop placement, prop-pack manifests, and preview images when needed.
 
 The current focus is 2D game assets and map scenes, not full game-pack automation.
 
@@ -226,6 +232,7 @@ The current focus is 2D game assets and map scenes, not full game-pack automatio
 - Small bundles such as `unit_bundle`, `spell_bundle`, and `combat_bundle`
 - Single baked 2D maps
 - Layered base maps with transparent props
+- 2D map prop packs such as `2x2`, `3x3`, and `4x4`
 - Collision and zone metadata for playable maps
 - Flattened map previews for QA and showcase
 
@@ -269,6 +276,10 @@ agent-sprite-forge/
       references/
         layered-map-contract.md
         map-strategies.md
+        prop-pack-contract.md
+      scripts/
+        compose_layered_preview.py
+        extract_prop_pack.py
     generate2dsprite/
       SKILL.md
       agents/
@@ -374,11 +385,11 @@ Use $generate2dmap to create a small fixed-screen pixel-art battle arena with si
 ```
 
 ```text
-Use $generate2dmap to create a top-down RPG shrine courtyard. It needs precise collision, an encounter grass zone, a rest point, and actors that can walk in front of and behind tall props.
+Use $generate2dmap to create a top-down RPG forest shrine map. Use a layered raster pipeline, a 3x3 prop pack for small environmental props, precise collision, encounter grass zones, a rest point, and actors that can walk in front of and behind tall props.
 ```
 
 ```text
-Use $generate2dmap to revise this existing map into a hybrid map. Keep the background baked, but split the gate and lanterns into reusable transparent props.
+Use $generate2dmap to revise this existing map into a layered raster map. Keep the background baked, but split the gate and lanterns into reusable transparent props with y-sort placement metadata.
 ```
 
 ## What You Get
@@ -398,7 +409,7 @@ For player walk sheets, you also get direction strips and per-direction GIFs.
 For a map output, the result depends on the chosen pipeline:
 
 - Single baked map: a complete map image, optional prompt file, and optional collision metadata.
-- Hybrid or layered map: a base map, generated prop folders, prop placement metadata, collision/zones metadata, and a flattened layered preview.
+- Layered raster map: a base map, generated prop folders or prop-pack extraction manifest, prop placement metadata, collision/zones metadata, and a flattened layered preview.
 
 ## Notes
 

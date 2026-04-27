@@ -1,8 +1,8 @@
-# Layered Map Contract
+# Layered Raster Map Contract
+
+Use this contract for hand-painted or generated 2D RPG scenes, monster-taming exploration maps, shrine/town/dungeon maps, and any top-down scene where actors must interact with props.
 
 ## Layer Types
-
-Use these layers for hand-painted or generated 2D RPG scenes:
 
 1. `base`: one raster image containing only terrain and ground-level details.
 2. `props`: transparent sprites anchored in map coordinates.
@@ -19,15 +19,22 @@ Use this shape when generating a base map:
 ```text
 Create a ground-only top-down 2D pixel-art RPG map.
 This is a BASE GROUND MAP ONLY.
-Include terrain, paths, grass, water, cliffs, ground markings, and flat anchor pads.
+Include terrain, paths, grass, water, cliffs, ground markings, floor patterns, and flat anchor pads.
 Do not include tall collidable objects: no buildings, gates, fences, lanterns, trees, signs, barrels, NPCs, monsters, UI, or text.
 Leave clear empty spaces where props will be placed later.
 Make walkable paths and zone boundaries easy to trace.
 ```
 
-## Prop Prompt Pattern
+## Prop Generation
 
-Use `$generate2dsprite` for each prop when the map strategy needs separate transparent objects. Keep prompts direct:
+Use `$generate2dsprite` when the map needs reusable transparent props. Choose one of two approaches:
+
+- One-by-one props: safest for large, important, irregular, animated, or identity-critical props.
+- Prop packs: faster for sets of small/medium static environmental props.
+
+Read [prop-pack-contract.md](prop-pack-contract.md) before batching props.
+
+## One-By-One Prop Prompt Pattern
 
 ```text
 Create a single <prop> prop for a top-down 2D pixel-art RPG map.
@@ -58,24 +65,27 @@ python /path/to/generate2dsprite.py process \
   --edge-clean-depth 2
 ```
 
-Use a larger `--cell-size` for buildings or large gates.
+Use a larger `--cell-size` for buildings, trees, gates, statues, or large signs.
 
 ## Prop Metadata
 
 Use explicit map-space dimensions:
 
-```js
-const MAP_PROPS = [
-  {
-    id: "torii",
-    imageKey: "propTorii",
-    x: 836,
-    y: 850,
-    w: 380,
-    h: 306,
-    sortY: 850
-  }
-];
+```json
+{
+  "props": [
+    {
+      "id": "torii",
+      "image": "assets/props/torii/prop.png",
+      "x": 836,
+      "y": 850,
+      "w": 380,
+      "h": 306,
+      "sortY": 850,
+      "layer": "props"
+    }
+  ]
+}
 ```
 
 Anchor conventions:
@@ -83,7 +93,8 @@ Anchor conventions:
 - `x`: center of the prop's base/feet.
 - `y`: bottom of the prop in map coordinates.
 - `w`, `h`: rendered size in map units.
-- `sortY`: y-depth used for render ordering. Use the base y for normal props. Use a lower or higher value intentionally for special foreground behavior.
+- `sortY`: y-depth used for render ordering. Use base `y` for normal props.
+- `layer`: `props` for y-sorted objects, `foreground` for always-over actors overlays.
 
 ## Render Order
 
@@ -94,10 +105,8 @@ base map
 ground effects / zone glimmers
 renderables sorted by sortY:
   props
-  player
-  NPCs
-  monsters
-foreground overlays, only when needed
+  actors
+foreground overlays
 debug collision
 HUD/UI
 ```
@@ -112,18 +121,16 @@ Keep collision readable and hand-editable:
 {
   "mapSize": { "width": 1672, "height": 941 },
   "spawn": { "x": 836, "y": 782 },
-  "npc": { "x": 836, "y": 390, "collisionRadius": 32, "interactRadius": 112 },
-  "rest": { "x": 760, "y": 548, "radius": 122 },
-  "zones": {
-    "grass": { "x": 180, "y": 306, "w": 382, "h": 302 },
-    "training": { "x": 1120, "y": 324, "w": 382, "h": 282 }
-  },
   "walkBounds": [
     { "id": "main-courtyard", "type": "ellipse", "x": 838, "y": 548, "rx": 604, "ry": 304 }
   ],
   "blockers": [
     { "id": "torii-left-pillar", "type": "rect", "x": 704, "y": 668, "w": 52, "h": 176 }
-  ]
+  ],
+  "zones": {
+    "grass": { "type": "rect", "x": 180, "y": 306, "w": 382, "h": 302 },
+    "rest": { "type": "circle", "x": 760, "y": 548, "radius": 122 }
+  }
 }
 ```
 
@@ -135,9 +142,20 @@ Guidelines:
 - Use rectangles for fences, walls, buildings, gates, bridges, and posts.
 - Use polygons only when rects/ellipses produce poor walkability.
 
-## QA Checklist
+## Preview Composition
 
-Run or simulate checks:
+Use `scripts/compose_layered_preview.py` to flatten a base map and placement JSON:
+
+```bash
+python skills/generate2dmap/scripts/compose_layered_preview.py \
+  --base assets/map/shrine-base.png \
+  --placements data/shrine-props.json \
+  --output assets/map/shrine-layered-preview.png
+```
+
+The script assumes prop placement uses center-bottom anchoring unless a prop explicitly sets another anchor.
+
+## QA Checklist
 
 - Spawn point is walkable.
 - Main path centers are walkable.
