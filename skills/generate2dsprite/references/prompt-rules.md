@@ -23,7 +23,8 @@ Always keep these constraints:
 
 Use these rules when the user attaches a reference, points to a local image, asks for consistency with an earlier generated image, or asks for an evolution/variant of an existing sprite:
 
-- Make the reference image visible to built-in `image_gen` before generation. If the reference is a local file, call `view_image` first; do not assume a path string is a visual input.
+- Make the reference image visible before generation. If the reference is a local file, inspect or describe it first; do not assume a path string is a visual input.
+- If the Nano Banana API supports a reference-image input parameter, pass the image directly instead of relying only on a text description.
 - In the prompt, say `use the image just shown as the visual reference`.
 - State what must stay fixed: silhouette family, palette, face/eyes, costume or markings, accessories, material language, and pixel-art style.
 - State what may change: pose, animation phase, action energy, size progression, evolution traits, or FX intensity.

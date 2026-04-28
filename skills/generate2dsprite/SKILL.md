@@ -1,6 +1,6 @@
 ---
 name: generate2dsprite
-description: "Generate and postprocess general 2D pixel-art assets and animation sheets: creatures, characters, NPCs, spells, projectiles, impacts, props, summons, and transparent GIF exports. Use when Codex should infer the asset plan from a natural-language request, call built-in `image_gen` for solid-magenta raw sheets, and use the local processor only for chroma-key cleanup, frame extraction, alignment, QC, and transparent exports."
+description: "Generate and postprocess general 2D pixel-art assets and animation sheets: creatures, characters, NPCs, spells, projectiles, impacts, props, summons, and transparent GIF exports. Use when an agent should infer the asset plan from a natural-language request, call Nano Banana Pro via `scripts/nanobananagen.py` for raw sheets, and use the local processor only for chroma-key cleanup, frame extraction, alignment, QC, and transparent exports."
 ---
 
 # Generate2dsprite
@@ -33,8 +33,8 @@ Read [references/modes.md](references/modes.md) when the request is ambiguous.
 
 - Decide the asset plan yourself. Do not force the user to spell out sheet size, frame count, or bundle structure when the request already implies them.
 - Write the art prompt yourself. Do not default to the prompt-builder script.
-- Use built-in `image_gen` for every raw image.
-- When the user provides or implies a visual reference, use built-in image edit/reference semantics only after the reference image is visible in the conversation context. If the reference is a local file, call `view_image` first; do not rely on a filesystem path in the prompt as the visual reference.
+- Generate every raw image with `scripts/nanobananagen.py` (Nano Banana Pro API, model `gemini-3-pro-image-preview`).
+- When the user provides or implies a visual reference, make the reference available to the generation model first. For local paths, inspect the image before writing the prompt; for attached or freshly generated references, use the image already visible in context. If the API/tooling supports reference-image input, pass the image directly instead of relying only on a filesystem path in the prompt.
 - Use the script only as a deterministic processor: magenta cleanup, frame splitting, component filtering, scaling, alignment, QC metadata, transparent sheet export, and GIF export.
 - Treat script flags as execution primitives chosen by the agent, not user-facing hardcoded workflow.
 - If a generated sheet touches cell edges, drifts in scale, or breaks a projectile / impact loop, either reprocess with better primitive settings or regenerate the raw sheet.
@@ -65,7 +65,7 @@ Use [references/prompt-rules.md](references/prompt-rules.md).
 
 If a reference is involved:
 
-- Make the reference visible first. For local paths, use `view_image`; for freshly generated references, rely on the image already shown in context.
+- Make the reference visible first. For local paths, inspect or describe the image before writing the prompt; for freshly generated references, rely on the image already shown in context.
 - State the reference role explicitly: preserve identity/style, create an animation sheet for the same subject, create an evolution/variant, or derive a matching prop/FX.
 - Preserve the stable identity markers from the reference: silhouette, palette, face/eye features, costume marks, major accessories, and material language.
 - Let only the requested action or evolution change. Do not redesign the subject unless the user asks.
@@ -81,13 +81,20 @@ Keep the strict parts:
 
 ### 3. Generate the raw image
 
-Use built-in `image_gen`.
+Generate the raw PNG with Nano Banana Pro:
 
-After generation:
+```bash
+export AIAPI_UU_CC_KEY="<api-key>"
+python3 scripts/nanobananagen.py \
+  --prompt "$(cat prompt-used.txt)" \
+  --output raw-sheet.png
+```
 
-- find the raw PNG under `$CODEX_HOME/generated_images/...`
-- copy or reference it from the working output folder
-- keep the original generated image in place
+Notes:
+
+- `nanobananagen.py` calls `https://aiapi.uu.cc/v1/chat/completions` with model `gemini-3-pro-image-preview`.
+- Keep the returned PNG in the working output folder as `raw-sheet.png` or `raw.png`.
+- Do not hardcode API keys in prompts, scripts, or committed files; use `AIAPI_UU_CC_KEY` or `--api-key` only for local runs.
 
 ### 4. Postprocess locally
 
